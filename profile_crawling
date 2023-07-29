@@ -1,0 +1,71 @@
+#import necessary libraries
+
+from selenium import webdriver
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+import time
+from selenium.common.exceptions import NoSuchElementException
+
+#open chrome driver and go to the destination url in google scholar
+
+driver = webdriver.Chrome(executable_path=r'D:\MS-computer_science-shahed_uni\dissertation works\test codes\web crawling\chromedriver.exe')
+driver.get('https://scholar.google.com/')
+search_box = driver.find_element_by_css_selector('#gs_hdr_tsi')
+search_box.send_keys('iran')
+search_box.submit()
+iran_profiles_link = driver.find_element_by_css_selector('#gs_res_ccl_mid > div:nth-child(1) > h3 > a').get_attribute('href')
+driver.get(iran_profiles_link)
+
+
+
+#start crawling
+
+citation_number = []
+professor_name = []
+field_university = []
+university_link = []
+email = []
+home_page_link = []
+interests = []
+Hindex = []
+Profile_link = []
+i = 0
+while driver.find_element_by_css_selector('#gsc_authors_bottom_pag > div > button.gs_btnPR.gs_in_ib.gs_btn_half.gs_btn_lsb.gs_btn_srt.gsc_pgn_pnx').is_enabled():
+    for link in driver.find_elements_by_css_selector('#gsc_sa_ccl > div > div > a'):
+            link.click()
+            professor_name.append(driver.find_element_by_css_selector('#gsc_prf_in').text)
+            field_university.append(driver.find_element_by_css_selector('#gsc_prf_i > div:nth-child(2)').text)
+            citation_number.append(driver.find_element_by_css_selector('#gsc_rsb_st > tbody > tr:nth-child(1) > td:nth-child(2)').text)
+            Hindex.append(driver.find_element_by_css_selector('#gsc_rsb_st > tbody > tr:nth-child(2) > td:nth-child(2)').text)
+            Profile_link.append('driver.current_url')
+            try:
+                driver.find_element_by_css_selector('#gsc_prf_i > div:nth-child(2) > a')
+            except NoSuchElementException:
+                university_link.append("")
+            else:
+                university_link.append(driver.find_element_by_css_selector('#gsc_prf_i > div:nth-child(2) > a').get_attribute('href'))  
+            email.append(driver.find_element_by_css_selector('#gsc_prf_ivh').text)
+            try:
+                driver.find_element_by_css_selector('#gsc_prf_ivh > a')        
+            except NoSuchElementException:
+                home_page_link.append("")
+            else:
+                home_page_link.append(driver.find_element_by_id('gsc_prf_ivh').find_element_by_class_name('gsc_prf_ila').get_attribute('href'))
+            interests.append([tag.text for tag in driver.find_elements_by_css_selector('#gsc_prf_int > a')])
+            time.sleep(1)
+            driver.back()
+            i+=1
+    if i == 1000:
+        time.sleep(60)
+    elif i == 1500:
+        time.sleep(90)
+    elif i == 2000:
+        time.sleep(120)
+    elif i == 2500:
+        time.sleep(120)
+    elif i == 3000:
+        time.sleep(120)
+    time.sleep(1)
+    driver.find_element_by_css_selector('#gsc_authors_bottom_pag > div > button.gs_btnPR.gs_in_ib.gs_btn_half.gs_btn_lsb.gs_btn_srt.gsc_pgn_pnx').click()
+
